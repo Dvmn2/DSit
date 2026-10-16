@@ -1,0 +1,35 @@
+name: DSit
+description: Позволяет игрокам садиться (команда, блоки, другие игроки) и удерживать игроков командой /grab.
+version: '${version}'
+
+main: net.dvmn2.dsit.DSit
+api-version: '1.21'
+load: POSTWORLD
+
+authors: [ DVMN2 ]
+
+permissions:
+  dsit.sit:
+    description: Использование /sit
+    default: true
+  dsit.sit.block:
+    description: Посадка по ПКМ на блоки (ступеньки, плиты и т.д.)
+    default: true
+  dsit.sit.player:
+    description: Посадка по ПКМ на голову другого игрока
+    default: true
+  dsit.grab:
+    description: Использование /grab и /ungrab
+    default: op
+  dsit.grab.exempt:
+    description: Иммунитет к /grab
+    default: false
+  dsit.reload:
+    description: Использование /dsit reload
+    default: op
+  dsit.admin:
+    description: Все административные права DSit
+    default: op
+    children:
+      dsit.reload: true
+      dsit.grab: true
