@@ -1,5 +1,5 @@
 name: DSit
-description: Позволяет игрокам садиться (команда, блоки, другие игроки) и удерживать игроков командой /grab.
+description: Позволяет игрокам садиться, лежать и ползать, а админам — удерживать игроков командой /grab.
 version: '${version}'
 
 main: net.dvmn2.dsit.DSit
@@ -17,6 +17,12 @@ permissions:
     default: true
   dsit.sit.player:
     description: Посадка по ПКМ на голову другого игрока
+    default: true
+  dsit.lay:
+    description: Использование /lay
+    default: true
+  dsit.crawl:
+    description: Использование /crawl
     default: true
   dsit.grab:
     description: Использование /grab и /ungrab

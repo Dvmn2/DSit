@@ -64,11 +64,17 @@ public final class SeatManager {
 
     private BukkitTask tickTask;
     private boolean internalTeleport;
+    private PoseManager poses;
 
     public SeatManager(JavaPlugin plugin, DSitSettings settings) {
         this.plugin = plugin;
         this.settings = settings;
         this.seatKey = new NamespacedKey(plugin, "seat");
+    }
+
+    /** Связь с позами (/lay, /crawl): новая посадка или удержание снимает их. */
+    void setPoses(PoseManager poses) {
+        this.poses = poses;
     }
 
     // ---------------------------------------------------------------- жизненный цикл
@@ -233,6 +239,9 @@ public final class SeatManager {
         }
 
         // Освобождаем всё, что было связано с игроком до этого.
+        if (poses != null) {
+            poses.stop(target, StandReason.COMMAND);
+        }
         if (existing != null) {
             remove(existing, target, StandReason.COMMAND);
         }
@@ -309,7 +318,8 @@ public final class SeatManager {
                 && !target.isInsideVehicle()
                 && target.getPassengers().isEmpty()
                 && !bySitter.containsKey(target.getUniqueId())
-                && !byAnchor.containsKey(target.getUniqueId());
+                && !byAnchor.containsKey(target.getUniqueId())
+                && (poses == null || !poses.isPosed(target));
     }
 
     private SitResult startSeat(Player player, SitType type, Location seatLocation,
@@ -318,6 +328,9 @@ public final class SeatManager {
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             return SitResult.CANCELLED;
+        }
+        if (poses != null) {
+            poses.stop(player, StandReason.COMMAND);
         }
 
         Interaction entity = spawnSeat(seatLocation);
@@ -481,6 +494,8 @@ public final class SeatManager {
                 case BLOCK -> tickBlock(seat, player);
                 case COMMAND -> tickCommand(seat, player);
                 case PLAYER -> tickPlayer(seat, player);
+                default -> {
+                }
             }
         }
     }
@@ -564,7 +579,7 @@ public final class SeatManager {
     // ---------------------------------------------------------------- геометрия
 
     /** Под точкой есть что-либо твёрдое (тонкий "зонд" чуть ниже ног). */
-    private boolean hasSupport(Player player, Location feet) {
+    boolean hasSupport(Player player, Location feet) {
         BoundingBox probe = new BoundingBox(
                 feet.getX() - 0.1, feet.getY() - 0.1, feet.getZ() - 0.1,
                 feet.getX() + 0.1, feet.getY() - 0.001, feet.getZ() + 0.1);

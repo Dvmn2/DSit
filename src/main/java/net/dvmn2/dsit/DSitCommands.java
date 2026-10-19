@@ -23,6 +23,8 @@ import java.util.concurrent.CompletableFuture;
  * Команды плагина:
  * <pre>
  * /sit                  — сесть на месте; повторно — встать
+ * /lay                  — лечь на месте; повторно (или shift) — встать
+ * /crawl                — ползти; повторно — встать
  * /grab &lt;игроки&gt;      — удержать игрока на невидимом сиденье (не даёт слезть и телепортироваться)
  * /ungrab &lt;игроки&gt;    — отпустить
  * /dsit reload          — перечитать config.yml
@@ -34,11 +36,13 @@ public final class DSitCommands {
 
     private final DSit plugin;
     private final SeatManager seats;
+    private final PoseManager poses;
     private final DSitSettings settings;
 
-    public DSitCommands(DSit plugin, SeatManager seats, DSitSettings settings) {
+    public DSitCommands(DSit plugin, SeatManager seats, PoseManager poses, DSitSettings settings) {
         this.plugin = plugin;
         this.seats = seats;
+        this.poses = poses;
         this.settings = settings;
     }
 
@@ -46,6 +50,20 @@ public final class DSitCommands {
         return Commands.literal("sit")
                 .requires(source -> source.getSender().hasPermission(Permissions.SIT))
                 .executes(this::runSit)
+                .build();
+    }
+
+    public LiteralCommandNode<CommandSourceStack> createLay() {
+        return Commands.literal("lay")
+                .requires(source -> source.getSender().hasPermission(Permissions.LAY))
+                .executes(ctx -> runPose(ctx, SitType.LAY))
+                .build();
+    }
+
+    public LiteralCommandNode<CommandSourceStack> createCrawl() {
+        return Commands.literal("crawl")
+                .requires(source -> source.getSender().hasPermission(Permissions.CRAWL))
+                .executes(ctx -> runPose(ctx, SitType.CRAWL))
                 .build();
     }
 
@@ -112,6 +130,43 @@ public final class DSitCommands {
             case SELF_BUSY -> player.sendMessage(Lang.get(Lang.Key.CANNOT_SIT_NOW, player));
             case INVALID_LOCATION -> player.sendMessage(Lang.get(Lang.Key.CANNOT_SIT_HERE, player));
             default -> player.sendMessage(Lang.get(Lang.Key.SIT_FAILED, player));
+        }
+        return 0;
+    }
+
+    // ---------------------------------------------------------------- /lay, /crawl
+
+    /** Общая логика /lay и /crawl: повторный вызов снимает позу, иначе включает. */
+    private int runPose(CommandContext<CommandSourceStack> ctx, SitType type) {
+        CommandSender sender = ctx.getSource().getSender();
+        Entity executor = ctx.getSource().getExecutor();
+        if (!(executor instanceof Player player)) {
+            sender.sendMessage(Lang.get(Lang.Key.ONLY_PLAYERS, sender));
+            return 0;
+        }
+
+        boolean lay = type == SitType.LAY;
+        if (!(lay ? settings.isLayEnabled() : settings.isCrawlEnabled())) {
+            player.sendMessage(Lang.get(lay ? Lang.Key.LAY_DISABLED : Lang.Key.CRAWL_DISABLED, player));
+            return 0;
+        }
+        if (seats.isGrabbed(player)) {
+            player.sendMessage(Lang.get(Lang.Key.YOU_ARE_HELD, player));
+            return 0;
+        }
+        if (lay ? poses.isLaying(player) : poses.isCrawling(player)) {
+            poses.stop(player, StandReason.COMMAND);
+            return Command.SINGLE_SUCCESS;
+        }
+
+        SitResult result = lay ? poses.startLay(player) : poses.startCrawl(player);
+        switch (result) {
+            case SUCCESS -> {
+                return Command.SINGLE_SUCCESS;
+            }
+            case CANCELLED -> player.sendMessage(Lang.get(Lang.Key.POSE_CANCELLED, player));
+            case INVALID_LOCATION -> player.sendMessage(Lang.get(Lang.Key.CANNOT_POSE_HERE, player));
+            default -> player.sendMessage(Lang.get(Lang.Key.CANNOT_POSE_NOW, player));
         }
         return 0;
     }

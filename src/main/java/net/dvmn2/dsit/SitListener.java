@@ -5,16 +5,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDismountEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.PlayerInventory;
-import org.spigotmc.event.entity.EntityDismountEvent;
 
 /**
  * Игровые события: посадка по ПКМ на блок/игрока, запрет слезать у удерживаемых,
@@ -24,14 +20,18 @@ import org.spigotmc.event.entity.EntityDismountEvent;
 public final class SitListener implements Listener {
 
     private final SeatManager seats;
+    private final PoseManager poses;
     private final DSitSettings settings;
 
-    public SitListener(SeatManager seats, DSitSettings settings) {
+    public SitListener(SeatManager seats, PoseManager poses, DSitSettings settings) {
         this.seats = seats;
+        this.poses = poses;
         this.settings = settings;
     }
 
-    /** ПКМ по блоку: садимся на ступеньки/плиты и т.д. */
+    /**
+     * ПКМ по блоку: садимся на ступеньки/плиты и т.д.
+     */
     @EventHandler(ignoreCancelled = true)
     public void onInteractBlock(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getHand() != EquipmentSlot.HAND) {
@@ -64,7 +64,9 @@ public final class SitListener implements Listener {
         }
     }
 
-    /** ПКМ по игроку: садимся ему на голову. */
+    /**
+     * ПКМ по игроку: садимся ему на голову.
+     */
     @EventHandler(ignoreCancelled = true)
     public void onInteractPlayer(PlayerInteractEntityEvent event) {
         // PlayerInteractAtEntityEvent — подкласс; обрабатываем только "обычное" событие, чтобы не сработать дважды.
@@ -95,7 +97,9 @@ public final class SitListener implements Listener {
         }
     }
 
-    /** Удерживаемому игроку нельзя слезть. Если выход нельзя отменить — вернёт tick в SeatManager. */
+    /**
+     * Удерживаемому игроку нельзя слезть. Если выход нельзя отменить — вернёт tick в SeatManager.
+     */
     @EventHandler(ignoreCancelled = true)
     public void onDismount(EntityDismountEvent event) {
         if (event.getEntity() instanceof Player player && seats.isGrabbed(player) && event.isCancellable()) {
@@ -103,7 +107,9 @@ public final class SitListener implements Listener {
         }
     }
 
-    /** Удерживаемого игрока нельзя телепортировать: сначала /ungrab. */
+    /**
+     * Удерживаемого игрока нельзя телепортировать: сначала /ungrab.
+     */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onTeleport(PlayerTeleportEvent event) {
         if (!seats.isInternalTeleport() && seats.isGrabbed(event.getPlayer())) {
@@ -111,14 +117,26 @@ public final class SitListener implements Listener {
         }
     }
 
+    /**
+     * Shift поднимает лежащего (/lay).
+     */
+    @EventHandler(ignoreCancelled = true)
+    public void onToggleSneak(PlayerToggleSneakEvent event) {
+        if (event.isSneaking()) {
+            poses.handleSneak(event.getPlayer());
+        }
+    }
+
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         seats.handleQuit(event.getPlayer());
+        poses.handleQuit(event.getPlayer());
     }
 
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
         seats.handleDeath(event.getPlayer());
+        poses.handleDeath(event.getPlayer());
     }
 
     @EventHandler

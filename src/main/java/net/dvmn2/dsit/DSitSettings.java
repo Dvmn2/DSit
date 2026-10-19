@@ -36,6 +36,9 @@ public final class DSitSettings {
     private volatile boolean playerRequireEmptyHand;
     private volatile boolean playerRequireSneaking;
 
+    private volatile boolean layEnabled;
+    private volatile boolean crawlEnabled;
+
     private volatile double seatYOffset;
 
     public DSitSettings(JavaPlugin plugin) {
@@ -58,6 +61,9 @@ public final class DSitSettings {
 
         playerRequireEmptyHand = config.getBoolean(ROOT + "player.require-empty-hand", true);
         playerRequireSneaking = config.getBoolean(ROOT + "player.require-sneaking", false);
+
+        layEnabled = config.getBoolean(ROOT + "pose.lay", true);
+        crawlEnabled = config.getBoolean(ROOT + "pose.crawl", true);
 
         seatYOffset = config.getDouble(ROOT + "seat.y-offset", 0.0);
     }
@@ -124,6 +130,14 @@ public final class DSitSettings {
 
     public boolean isPlayerRequireSneaking() {
         return playerRequireSneaking;
+    }
+
+    public boolean isLayEnabled() {
+        return layEnabled;
+    }
+
+    public boolean isCrawlEnabled() {
+        return crawlEnabled;
     }
 
     public double getSeatYOffset() {

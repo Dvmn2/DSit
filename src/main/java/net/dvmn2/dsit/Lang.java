@@ -21,6 +21,11 @@ public final class Lang {
         CANNOT_SIT_HERE,
         SIT_CANCELLED,
         SIT_FAILED,
+        LAY_DISABLED,
+        CRAWL_DISABLED,
+        CANNOT_POSE_NOW,
+        CANNOT_POSE_HERE,
+        POSE_CANCELLED,
         SEAT_OCCUPIED,
         TARGET_BUSY,
         YOU_ARE_HELD,
@@ -45,6 +50,11 @@ public final class Lang {
         RU.put(Key.CANNOT_SIT_HERE, "§cЗдесь нельзя сесть: нужна твёрдая опора под ногами.");
         RU.put(Key.SIT_CANCELLED, "§cПосадка отменена другим плагином.");
         RU.put(Key.SIT_FAILED, "§cНе удалось сесть.");
+        RU.put(Key.LAY_DISABLED, "§cКоманда /lay отключена на этом сервере.");
+        RU.put(Key.CRAWL_DISABLED, "§cКоманда /crawl отключена на этом сервере.");
+        RU.put(Key.CANNOT_POSE_NOW, "§cСейчас вы не можете принять эту позу.");
+        RU.put(Key.CANNOT_POSE_HERE, "§cЗдесь это невозможно: нужна ровная опора под ногами, без воды.");
+        RU.put(Key.POSE_CANCELLED, "§cДействие отменено другим плагином.");
         RU.put(Key.SEAT_OCCUPIED, "§cЭто место уже занято.");
         RU.put(Key.TARGET_BUSY, "§cНа этом игроке сейчас нельзя сидеть.");
         RU.put(Key.YOU_ARE_HELD, "§cВас удерживают — встать нельзя.");
@@ -64,6 +74,11 @@ public final class Lang {
         EN.put(Key.CANNOT_SIT_HERE, "§cYou can't sit here: solid ground under your feet is required.");
         EN.put(Key.SIT_CANCELLED, "§cSitting was cancelled by another plugin.");
         EN.put(Key.SIT_FAILED, "§cFailed to sit down.");
+        EN.put(Key.LAY_DISABLED, "§cThe /lay command is disabled on this server.");
+        EN.put(Key.CRAWL_DISABLED, "§cThe /crawl command is disabled on this server.");
+        EN.put(Key.CANNOT_POSE_NOW, "§cYou can't do that right now.");
+        EN.put(Key.CANNOT_POSE_HERE, "§cNot possible here: flat solid ground without water is required.");
+        EN.put(Key.POSE_CANCELLED, "§cThe action was cancelled by another plugin.");
         EN.put(Key.SEAT_OCCUPIED, "§cThis seat is already taken.");
         EN.put(Key.TARGET_BUSY, "§cYou can't sit on this player right now.");
         EN.put(Key.YOU_ARE_HELD, "§cYou are being held — you can't stand up.");
